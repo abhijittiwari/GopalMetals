@@ -187,7 +187,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/abhijit/Documents/GopalMetals/gopal-metals-website/app/generated/prisma",
+      "value": "/Users/abhijit/Documents/GopalMetals/app/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -201,7 +201,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/abhijit/Documents/GopalMetals/gopal-metals-website/prisma/schema.prisma",
+    "sourceFilePath": "/Users/abhijit/Documents/GopalMetals/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

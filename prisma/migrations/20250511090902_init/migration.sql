@@ -29,6 +29,11 @@ CREATE TABLE "Product" (
     "price" REAL,
     "categoryId" TEXT NOT NULL,
     "featured" BOOLEAN NOT NULL DEFAULT false,
+    "features" TEXT,
+    "applications" TEXT,
+    "materials" TEXT,
+    "thickness" TEXT,
+    "specifications" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
@@ -47,6 +52,27 @@ CREATE TABLE "Analytics" (
     "path" TEXT,
     "referrer" TEXT,
     "visitedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "Settings" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "data" TEXT NOT NULL,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "ContactSubmission" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "company" TEXT,
+    "subject" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "ipAddress" TEXT,
+    "isSpam" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateIndex

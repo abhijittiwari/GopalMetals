@@ -1,149 +1,92 @@
 import { PrismaClient } from '../app/generated/prisma';
 import { hash } from 'bcrypt';
 
+console.log('Starting seeding...');
+
+// Create a new PrismaClient instance
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Starting seeding...');
-  
-  // Create admin user
-  const password = await hash('admin123', 10);
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@gopalmetals.com' },
-    update: {},
-    create: {
-      email: 'admin@gopalmetals.com',
-      name: 'Admin',
-      password,
-      role: 'admin',
-    },
-  });
-  console.log(`Created admin user: ${admin.email}`);
-  
-  // Create categories if they don't exist
-  const categories = [
-    {
-      name: 'Welded Mesh',
-      slug: 'welded-mesh',
-      image: '/images/placeholder.svg',
-    },
-    {
-      name: 'Wire Mesh',
-      slug: 'wire-mesh',
-      image: '/images/placeholder.svg',
-    },
-    {
-      name: 'Expanded Metal',
-      slug: 'expanded-metal',
-      image: '/images/placeholder.svg',
-    },
-    {
-      name: 'Perforated Sheet',
-      slug: 'perforated-sheet',
-      image: '/images/placeholder.svg',
-    },
-  ];
-
-  for (const category of categories) {
-    const existingCategory = await prisma.category.findUnique({
-      where: { slug: category.slug },
+  try {
+    // Create admin user
+    const password = await hash('admin123', 10);
+    const admin = await prisma.user.create({
+      data: {
+        email: 'admin@gopalmetals.com',
+        name: 'Admin',
+        password,
+        role: 'admin',
+      },
     });
-
-    if (!existingCategory) {
-      await prisma.category.create({ data: category });
-      console.log(`Created category: ${category.name}`);
-    } else {
-      console.log(`Category exists: ${category.name}`);
-    }
-  }
-
-  // Get the category IDs
-  const weldedMeshCategory = await prisma.category.findUnique({
-    where: { slug: 'welded-mesh' },
-  });
-  
-  const wireMeshCategory = await prisma.category.findUnique({
-    where: { slug: 'wire-mesh' },
-  });
-  
-  const expandedMetalCategory = await prisma.category.findUnique({
-    where: { slug: 'expanded-metal' },
-  });
-  
-  const perforatedSheetCategory = await prisma.category.findUnique({
-    where: { slug: 'perforated-sheet' },
-  });
-
-  if (!weldedMeshCategory || !wireMeshCategory || !expandedMetalCategory || !perforatedSheetCategory) {
-    throw new Error('Failed to find categories');
-  }
-
-  // Create products if they don't exist
-  const products = [
-    {
-      name: 'Galvanized Welded Mesh',
-      slug: 'galvanized-welded-mesh',
-      description: 'High-quality galvanized welded wire mesh suitable for industrial and construction applications.',
-      categoryId: weldedMeshCategory.id,
-      featured: true,
-      images: '/images/placeholder.svg',
-    },
-    {
-      name: 'Stainless Steel Wire Mesh',
-      slug: 'stainless-steel-wire-mesh',
-      description: 'Premium stainless steel wire mesh with excellent corrosion resistance and durability.',
-      categoryId: wireMeshCategory.id,
-      featured: true,
-      images: '/images/placeholder.svg',
-    },
-    {
-      name: 'Standard Expanded Metal',
-      slug: 'standard-expanded-metal',
-      description: 'Standard expanded metal mesh for various industrial applications and filtration systems.',
-      categoryId: expandedMetalCategory.id,
-      featured: true,
-      images: '/images/placeholder.svg',
-    },
-    {
-      name: 'Round Hole Perforated Sheet',
-      slug: 'round-hole-perforated-sheet',
-      description: 'Round hole perforated sheet is a type of metal sheet that has a pattern of holes punched into it.',
-      categoryId: perforatedSheetCategory.id,
-      featured: true,
-      images: '/images/products/round-hole-perforated-sheet.jpg',
-      features: `Evenly spaced round-shaped holes punched through metal sheets.
-Customizable hole size, shape, and pattern.
-Effective filtration, ventilation, and separation properties.`,
-      applications: `Filtration and Separation: Used in filters, screens, and sieves.
-Architectural Design: Decorative panels, facades, and signage.
-Industrial: Ventilation, noise reduction, and heat dissipation.`,
-      materials: 'SS/GI/MS',
-      thickness: '0.5mm - 10mm',
-      specifications: `Hole Size: 1mm - 25mm
-Open Area: 20% - 70%
-Pattern: Staggered or Straight Line`
-    },
-  ];
-
-  for (const product of products) {
-    const existingProduct = await prisma.product.findUnique({
-      where: { slug: product.slug },
+    console.log(`Created admin user: ${admin.email}`);
+    
+    // Create a sample category
+    const category = await prisma.category.create({
+      data: {
+        name: 'Welded Mesh',
+        slug: 'welded-mesh',
+        image: '/images/placeholder.svg',
+      }
     });
-
-    if (!existingProduct) {
-      await prisma.product.create({ data: product });
-      console.log(`Created product: ${product.name}`);
-    } else {
-      // Update existing product
-      await prisma.product.update({
-        where: { id: existingProduct.id },
-        data: product,
-      });
-      console.log(`Updated product: ${product.name}`);
-    }
+    console.log(`Created category: ${category.name}`);
+    
+    // Create a sample product
+    const product = await prisma.product.create({
+      data: {
+        name: 'Galvanized Welded Mesh',
+        slug: 'galvanized-welded-mesh',
+        description: 'High-quality galvanized welded wire mesh.',
+        categoryId: category.id,
+        featured: true,
+        images: '/images/placeholder.svg',
+      }
+    });
+    console.log(`Created product: ${product.name}`);
+    
+    // Create default settings
+    const settings = await prisma.settings.create({
+      data: {
+        id: 1,
+        data: JSON.stringify({
+          contactInfo: {
+            companyName: 'Gopal Metals',
+            address: {
+              headOffice: '# 28, Example Road, Bengaluru – 560002',
+              corporateOffice: '# 320-2-22, Example Address, Mysore Road, Bengaluru- 560026',
+            },
+            phone: {
+              bangalore: '+91 9035000749',
+              hyderabad: '+91 9393031722',
+            },
+            email: 'info@gopalmetals.com',
+            contactFormEmails: ['info@gopalmetals.com'],
+            hours: 'Mon to Sat 9:30AM to 6:30PM',
+            googleMapsUrl: 'https://www.google.com/maps/embed?example',
+          },
+          socialLinks: {
+            facebook: 'https://facebook.com/gopalmetals',
+            twitter: 'https://twitter.com/gopalmetals',
+            instagram: 'https://instagram.com/gopalmetals',
+            linkedin: 'https://linkedin.com/company/gopalmetals',
+            youtube: 'https://youtube.com/gopalmetals',
+          },
+          logo: {
+            url: '/images/logo.png',
+            alt: 'Gopal Metals Logo',
+          },
+          heroImage: {
+            url: '/images/hero-image.jpg',
+            alt: 'Wire Mesh Hero Image',
+          },
+        }),
+      }
+    });
+    
+    console.log('Seeding completed successfully!');
+  } catch (error) {
+    console.error('Error during seeding:', error);
+    throw error;
   }
-  
-  console.log('Seeding completed successfully!');
 }
 
 main()
@@ -152,5 +95,6 @@ main()
     process.exit(1);
   })
   .finally(async () => {
+    // Close Prisma Client at the end
     await prisma.$disconnect();
   }); 
