@@ -13,9 +13,11 @@ const nextConfig = {
     ],
   },
   experimental: {
-    serverComponentsExternalPackages: ['prisma', '@prisma/client'],
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['localhost:3000', 'gopalmetals.com'],
+    },
   },
+  serverExternalPackages: ['prisma', '@prisma/client'],
   webpack: (config) => {
     return config;
   },

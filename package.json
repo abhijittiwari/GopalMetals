@@ -7,11 +7,11 @@
     "build": "ls -la && pwd && next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts",
+    "seed": "node -r ts-node/register prisma/seed.ts",
     "test-analytics": "node scripts/test-analytics.js"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts"
+    "seed": "node -r ts-node/register prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.11.0",
@@ -26,6 +26,7 @@
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
+    "react-google-recaptcha-v3": "^1.10.1",
     "ua-parser-js": "^1.0.37"
   },
   "devDependencies": {
