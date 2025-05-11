@@ -1,6 +1,6 @@
 # Gopal Metals Website
 
-This is the official website for Gopal Metals, a leading manufacturer of wire mesh products in India.
+This is the official website for Gopal Metals, a leading manufacturer and supplier of wire mesh products in India.
 
 ## Features
 
@@ -22,25 +22,19 @@ This is the official website for Gopal Metals, a leading manufacturer of wire me
 - **Google Analytics**: Google Analytics 4
 - **SEO**: Next.js Metadata API, JSON-LD structured data
 
-## Getting Started
+## Local Development
 
-First, install the dependencies:
+1. Install dependencies:
+   ```
+   npm install
+   ```
 
-```bash
-npm install
-# or
-yarn install
-```
+2. Start the development server:
+   ```
+   npm run dev
+   ```
 
-Then, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser to view the site.
 
 ## Environment Variables
 
@@ -108,12 +102,53 @@ The admin panel is accessible at `/admin` and provides the following functionali
 
 ## Deployment
 
-The website can be deployed to any platform that supports Next.js, such as Vercel, Netlify, or a custom server.
+### Important: Database Setup
+
+This application uses Prisma with SQLite. For proper deployment on platforms like Vercel and Digital Ocean:
+
+1. Make sure to set the following environment variables in your deployment platform:
+   - `DATABASE_URL`: `file:./production.db`
+   - `NODE_ENV`: `production`
+
+2. For Vercel:
+   - Go to your project settings
+   - Add the environment variables mentioned above
+   - Use the following build command: `chmod +x deploy.sh && ./deploy.sh`
+   - Set the output directory to: `.next`
+
+3. For Digital Ocean:
+   - Add the environment variables in the App Platform settings
+   - Use the deploy.sh script as part of your build command
+
+### Alternative Approach
+
+If you're still having issues with the database on serverless platforms like Vercel:
+
+1. Generate a static export of your site locally:
+   ```bash
+   npm run build
+   ```
+
+2. Push the static files to your hosting platform.
+
+## Database Initialization
+
+If you need to manually initialize the database:
 
 ```bash
-npm run build
-npm start
+npx prisma migrate dev --name init
+npx prisma generate
 ```
+
+## Additional Information
+
+The site is built with:
+- Next.js 15.3.1
+- React 18
+- Prisma ORM
+- Tailwind CSS
+
+For any issues during deployment, check the application logs in your hosting platform for detailed error messages.
 
 ## License
 
