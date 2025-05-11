@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  image     String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id             String   @id @default(uuid())
+  name           String
+  slug           String   @unique
+  description    String?
+  images         String?
+  price          Float?
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id])
+  featured       Boolean  @default(false)
+  features       String? // Store features as newline-separated text
+  applications   String? // Store applications as newline-separated text
+  materials      String? // Store available materials
+  thickness      String? // Store thickness range
+  specifications String? // Store other specifications as newline-separated "key:value" pairs
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Analytics {
+  id        String   @id @default(uuid())
+  ipAddress String?
+  country   String?
+  city      String?
+  region    String?
+  browser   String?
+  device    String?
+  os        String?
+  path      String?
+  referrer  String?
+  visitedAt DateTime @default(now())
+}
+
+model Settings {
+  id        Int      @id
+  data      String // SQLite stores all strings as TEXT by default
+  updatedAt DateTime @updatedAt
+}
+
+model ContactSubmission {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  subject   String
+  message   String
+  ipAddress String?
+  isSpam    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
