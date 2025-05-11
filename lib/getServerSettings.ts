@@ -2,6 +2,13 @@ import { prisma } from '@/lib/prisma';
 import { WebsiteSettings, defaultSettings } from './settings';
 
 export async function getServerSettings(): Promise<WebsiteSettings> {
+  // If running on Vercel, we might want to use default settings
+  // since SQLite doesn't work well in serverless environments
+  if (process.env.PLATFORM === 'vercel' || process.env.SKIP_DB_SEED === 'true') {
+    console.log('Using default settings due to platform constraints');
+    return defaultSettings;
+  }
+
   try {
     // Attempt to connect to the database and fetch settings
     let settings;

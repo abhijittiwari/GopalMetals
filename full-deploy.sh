@@ -49,25 +49,36 @@ case $PLATFORM in
   vercel)
     echo "DATABASE_URL=\"file:./production.db\"" > .env.local
     echo "NODE_ENV=\"production\"" >> .env.local
+    echo "NEXTAUTH_SECRET=\"$(openssl rand -hex 32)\"" >> .env.local
+    echo "NEXTAUTH_URL=\"https://gopalmetals.com\"" >> .env.local
     echo "PLATFORM=\"vercel\"" >> .env.local
+    echo "SKIP_DB_SEED=true" >> .env.local
     echo -e "${GREEN}Environment variables set for Vercel deployment${NC}"
     ;;
   digitalocean)
     echo "DATABASE_URL=\"file:./production.db\"" > .env.local
     echo "NODE_ENV=\"production\"" >> .env.local
+    echo "NEXTAUTH_SECRET=\"$(openssl rand -hex 32)\"" >> .env.local
+    echo "NEXTAUTH_URL=\"https://gopalmetals.com\"" >> .env.local
     echo "PLATFORM=\"digitalocean\"" >> .env.local
+    echo "SKIP_DB_SEED=true" >> .env.local
     echo -e "${GREEN}Environment variables set for DigitalOcean deployment${NC}"
     ;;
   vps)
     echo "DATABASE_URL=\"file:./production.db\"" > .env.local
     echo "NODE_ENV=\"production\"" >> .env.local
+    echo "NEXTAUTH_SECRET=\"$(openssl rand -hex 32)\"" >> .env.local
+    echo "NEXTAUTH_URL=\"https://gopalmetals.com\"" >> .env.local
     echo "PLATFORM=\"vps\"" >> .env.local
     echo -e "${GREEN}Environment variables set for VPS deployment${NC}"
     ;;
   static)
     echo "DATABASE_URL=\"file:./production.db\"" > .env.local
     echo "NODE_ENV=\"production\"" >> .env.local
+    echo "NEXTAUTH_SECRET=\"$(openssl rand -hex 32)\"" >> .env.local
+    echo "NEXTAUTH_URL=\"https://gopalmetals.com\"" >> .env.local
     echo "PLATFORM=\"static\"" >> .env.local
+    echo "SKIP_DB_SEED=true" >> .env.local
     echo -e "${GREEN}Environment variables set for static export${NC}"
     ;;
   *)
@@ -78,29 +89,20 @@ case $PLATFORM in
 esac
 echo
 
-# Database setup
-echo -e "${YELLOW}Step 3: Setting up database...${NC}"
+# Database setup (simplified)
+echo -e "${YELLOW}Step 3: Setting up Prisma...${NC}"
 
 # Ensure prisma directory exists
 mkdir -p prisma
 
-# Generate Prisma client
+# Generate Prisma client (this is the important part)
 echo "Generating Prisma client..."
 npx prisma generate
 if [ $? -ne 0 ]; then
   echo -e "${RED}Warning: Failed to generate Prisma client. Continuing anyway...${NC}"
 fi
 
-# Run migrations if on VPS or local development
-if [ "$PLATFORM" = "vps" ]; then
-  echo "Running database migrations..."
-  npx prisma migrate deploy
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}Warning: Failed to run migrations. Attempting to create database...${NC}"
-    npx prisma migrate dev --name init
-  fi
-fi
-echo -e "${GREEN}Database setup completed!${NC}"
+echo -e "${GREEN}Prisma setup completed!${NC}"
 echo
 
 # Build step
@@ -131,14 +133,14 @@ case $PLATFORM in
   vercel)
     echo "Vercel deployment is handled by Vercel's platform."
     echo "Make sure you've set the following in your Vercel project:"
-    echo "1. Environment Variables: DATABASE_URL, NODE_ENV"
+    echo "1. Environment Variables: DATABASE_URL, NODE_ENV, NEXTAUTH_SECRET, NEXTAUTH_URL, SKIP_DB_SEED"
     echo "2. Build Command: chmod +x full-deploy.sh && ./full-deploy.sh vercel"
     echo "3. Output Directory: .next"
     ;;
   digitalocean)
     echo "DigitalOcean deployment is handled by the App Platform."
     echo "Make sure you've set the following in your App Platform settings:"
-    echo "1. Environment Variables: DATABASE_URL, NODE_ENV"
+    echo "1. Environment Variables: DATABASE_URL, NODE_ENV, NEXTAUTH_SECRET, NEXTAUTH_URL, SKIP_DB_SEED"
     echo "2. Build Command: chmod +x full-deploy.sh && ./full-deploy.sh digitalocean"
     ;;
   vps)
