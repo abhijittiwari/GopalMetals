@@ -34,6 +34,7 @@ interface Product {
 
 interface PageProps {
   params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export default function EditProduct({ params }: PageProps) {
