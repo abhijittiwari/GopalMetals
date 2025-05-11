@@ -84,4 +84,4 @@ model ContactSubmission {
   ipAddress     String?
   isSpam        Boolean  @default(false)
   createdAt     DateTime @default(now())
-}
+} 

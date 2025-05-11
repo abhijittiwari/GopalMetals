@@ -1,0 +1,5 @@
+# Prisma Migrate metadata file
+# Read more: https://pris.ly/d/migration-metadata
+
+migration_name = "20240511000000_initial"
+version = "5.11.0" 
