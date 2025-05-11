@@ -1,0 +1,6 @@
+-- CreateTable
+CREATE TABLE "Settings" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "data" TEXT NOT NULL,
+    "updatedAt" DATETIME NOT NULL
+);
