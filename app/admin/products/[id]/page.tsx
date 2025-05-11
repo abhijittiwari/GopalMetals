@@ -32,12 +32,14 @@ interface Product {
   };
 }
 
-interface PageProps {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-}
+type PageProps = {
+  params: {
+    id: string;
+  };
+  searchParams: Record<string, string | string[] | undefined>;
+};
 
-export default function EditProduct({ params }: PageProps) {
+export default function EditProduct({ params, searchParams }: PageProps) {
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
