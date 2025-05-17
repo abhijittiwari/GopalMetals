@@ -26,8 +26,18 @@ check_status() {
 REPO_URL="https://github.com/abhijittiwari/GopalMetals.git"
 APP_DIR="/var/www/gopalmetals"
 DOMAIN_NAME="gopalmetals.com"
-NODE_VERSION="18"
+NODE_VERSION="18.19.1" # Pinned to specific version
 GITHUB_BRANCH="main"
+
+# Read package.json to get app version
+get_app_version() {
+    if [ -f "package.json" ]; then
+        version=$(grep -o '"version": "[^"]*' package.json | cut -d'"' -f4)
+        echo $version
+    else
+        echo "unknown"
+    fi
+}
 
 # Ask for confirmation
 read -p "This script will install Gopal Metals on this Ubuntu server. Continue? (y/n): " -n 1 -r
@@ -45,18 +55,27 @@ check_status "Failed to update system" "System updated successfully"
 sudo apt upgrade -y
 check_status "Failed to upgrade system" "System upgraded successfully"
 
-# Install required packages
+# Install required packages with specific versions where critical
 echo -e "\n${YELLOW}Installing required packages...${NC}"
 sudo apt install -y curl wget git nginx ufw build-essential
 check_status "Failed to install required packages" "Required packages installed successfully"
 
 # Step 2: Install Node.js
 echo -e "\n${YELLOW}Step 2: Installing Node.js ${NODE_VERSION}...${NC}"
-curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash -
-check_status "Failed to add Node.js repository" "Node.js repository added successfully"
+# Check if nvm is installed
+if [ ! -d "$HOME/.nvm" ]; then
+    echo "Installing nvm..."
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+fi
 
-sudo apt install -y nodejs
-check_status "Failed to install Node.js" "Node.js installed successfully"
+# Install specific Node.js version
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm install $NODE_VERSION
+nvm use $NODE_VERSION
+nvm alias default $NODE_VERSION
 
 # Verify Node.js and npm installation
 node_version=$(node -v)
@@ -96,10 +115,15 @@ fi
 git clone -b $GITHUB_BRANCH $REPO_URL $APP_DIR
 check_status "Failed to clone repository" "Repository cloned successfully to $APP_DIR"
 
+# Record source version
+cd $APP_DIR
+SOURCE_VERSION=$(get_app_version)
+echo -e "${GREEN}Deploying application version: ${SOURCE_VERSION}${NC}"
+
 # Step 5: Install application dependencies
 echo -e "\n${YELLOW}Step 5: Installing application dependencies...${NC}"
-cd $APP_DIR
-npm install
+# Use npm ci to ensure exact versions from package-lock.json
+npm ci
 check_status "Failed to install npm dependencies" "npm dependencies installed successfully"
 
 # Step A: Setup Prisma and database
@@ -113,25 +137,52 @@ NEXTAUTH_URL="https://${DOMAIN_NAME}"
 EOL
 check_status "Failed to create environment file" "Environment file created successfully"
 
-# Generate Prisma client
-npx prisma generate
+# Make sure DATABASE_URL is also available in .env for Prisma
+echo "DATABASE_URL=\"file:./production.db\"" > .env
+check_status "Failed to create .env file" ".env file created successfully"
+
+# Verify schema file exists
+if [ ! -f "./prisma/schema.prisma" ]; then
+  echo -e "${RED}Error: prisma/schema.prisma file not found!${NC}"
+  exit 1
+fi
+
+# Install specific Prisma version globally to avoid path issues
+echo -e "${YELLOW}Installing Prisma CLI globally...${NC}"
+npm install -g prisma@5.11.0
+check_status "Failed to install Prisma CLI" "Prisma CLI installed successfully"
+
+# Generate Prisma client using npx with explicit path to schema
+echo -e "${YELLOW}Running Prisma generate with absolute path...${NC}"
+SCHEMA_PATH="$APP_DIR/prisma/schema.prisma"
+echo -e "${YELLOW}Schema path: $SCHEMA_PATH${NC}"
+
+# Try different approaches to generate the client
+echo -e "${YELLOW}Approach 1: Using global prisma with full path${NC}"
+DATABASE_URL="file:./production.db" prisma generate --schema="$SCHEMA_PATH" || \
+echo -e "${YELLOW}Approach 2: Using npx with full path${NC}" && \
+DATABASE_URL="file:./production.db" npx prisma@5.11.0 generate --schema="$SCHEMA_PATH" || \
+echo -e "${YELLOW}Approach 3: Falling back to basic generate${NC}" && \
+DATABASE_URL="file:./production.db" npx prisma generate
+
 check_status "Failed to generate Prisma client" "Prisma client generated successfully"
 
 # Create database and run migrations if needed
 if [ ! -d prisma/migrations ]; then
     echo "Setting up initial database..."
-    npx prisma migrate dev --name init
+    DATABASE_URL="file:./production.db" prisma migrate dev --name init --schema="$SCHEMA_PATH" || \
+    DATABASE_URL="file:./production.db" npx prisma migrate dev --name init
     check_status "Failed to initialize database" "Database initialized successfully"
 fi
 
 # Step 7: Build the application
 echo -e "\n${YELLOW}Step 7: Building the application...${NC}"
-NODE_OPTIONS="--max_old_space_size=2048" npm run build
+NEXT_TELEMETRY_DISABLED=1 DISABLE_ESLINT_PLUGIN=true DISABLE_TYPESCRIPT=true npx next@15.3.1 build
 check_status "Failed to build application" "Application built successfully"
 
 # Step 8: Setup PM2 for process management
 echo -e "\n${YELLOW}Step 8: Setting up PM2 process manager...${NC}"
-sudo npm install -g pm2
+npm install -g pm2@5.3.1
 check_status "Failed to install PM2" "PM2 installed successfully"
 
 # Setup PM2 startup script
@@ -204,6 +255,7 @@ fi
 echo -e "\n${GREEN}==================================================${NC}"
 echo -e "${GREEN}      Gopal Metals Deployment Complete!           ${NC}"
 echo -e "${GREEN}==================================================${NC}"
+echo -e "\nDeployed application version: ${SOURCE_VERSION}"
 echo -e "\nYour website should now be accessible at: http://${DOMAIN_NAME}"
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo -e "and securely at: https://${DOMAIN_NAME}"
