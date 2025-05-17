@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
+import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaClient } from '../../../generated/prisma';
+import { PrismaClient } from '@/app/generated/prisma';
 import { compare } from 'bcrypt';
 import { JWT } from 'next-auth/jwt';
 import { Session } from 'next-auth';
@@ -31,9 +32,18 @@ declare module 'next-auth/jwt' {
   }
 }
 
-const prisma = new PrismaClient();
+// Initialize Prisma client only when needed
+let prisma: PrismaClient;
 
-const handler = NextAuth({
+function getPrismaClient() {
+  if (!prisma) {
+    prisma = new PrismaClient();
+  }
+  return prisma;
+}
+
+// Create the authentication options
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -46,28 +56,45 @@ const handler = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
+        console.log(`Attempting database auth for: ${credentials.email}`);
+        
+        try {
+          // Get Prisma client
+          const db = getPrismaClient();
+          
+          // Find the user by email
+          const user = await db.user.findUnique({
+            where: {
+              email: credentials.email
+            }
+          });
+
+          if (!user) {
+            console.log(`User not found: ${credentials.email}`);
+            return null;
           }
-        });
 
-        if (!user) {
+          // Compare password with hashed password in db
+          const passwordMatch = await compare(credentials.password, user.password);
+
+          if (!passwordMatch) {
+            console.log(`Password mismatch for: ${credentials.email}`);
+            return null;
+          }
+
+          console.log(`Successful authentication for: ${credentials.email}, role: ${user.role}`);
+          
+          // Return the user object for successful auth
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role
+          };
+        } catch (error) {
+          console.error('Database authentication error:', error);
           return null;
         }
-
-        const passwordMatch = await compare(credentials.password, user.password);
-
-        if (!passwordMatch) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
-        };
       }
     })
   ],
@@ -89,11 +116,16 @@ const handler = NextAuth({
   },
   pages: {
     signIn: '/admin/login',
+    error: '/admin/login',
   },
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as const,
+    maxAge: 24 * 60 * 60, // 24 hours
   },
-  secret: process.env.NEXTAUTH_SECRET,
-});
+  debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET || 'your-fallback-secret-do-not-use-in-production',
+};
 
+// Create and export the handler
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST }; 

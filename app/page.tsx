@@ -3,6 +3,29 @@ import Image from 'next/image';
 import { getServerSettings } from '@/lib/getServerSettings';
 import ContactForm from './components/ContactForm';
 
+// Function to fetch featured products from the API
+async function fetchFeaturedProducts() {
+  try {
+    // Use absolute URL with current origin for server-side fetching
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXTAUTH_URL || 'http://localhost:3003';
+      
+    const res = await fetch(`${baseUrl}/api/featured-products`, { 
+      next: { revalidate: 3600 } // Revalidate every hour
+    });
+    
+    if (!res.ok) {
+      throw new Error('Failed to fetch featured products');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching featured products:', error);
+    return []; // Return empty array on error
+  }
+}
+
 export default async function Home() {
   // Fetch settings
   const settings = await getServerSettings();
@@ -113,93 +136,38 @@ export default async function Home() {
           </div>
           
           <div className="mt-12 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-            {/* Product Card 1 */}
-            <div className="group relative bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
-              <div className="aspect-w-3 aspect-h-2">
-                <div className="h-52 bg-gray-200 group-hover:opacity-90 transition-opacity">
-                  <img src="/images/placeholder.svg" alt="Welded Mesh" className="w-full h-full object-cover" />
+            {(await fetchFeaturedProducts()).map((product) => (
+              <div key={product.id} className="group relative bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
+                <div className="aspect-w-3 aspect-h-2">
+                  <div className="h-52 bg-gray-200 group-hover:opacity-90 transition-opacity">
+                    <img 
+                      src={product.images ? JSON.parse(product.images)[0] : "/images/placeholder.svg"} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
+                  <p className="mt-2 text-base text-gray-600">
+                    {product.description ? (
+                      product.description.length > 120 
+                        ? `${product.description.substring(0, 120)}...` 
+                        : product.description
+                    ) : (
+                      "Discover our high-quality metal products designed for durability and performance."
+                    )}
+                  </p>
+                  <div className="mt-6">
+                    <Link href={`/products/${product.slug}`} className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium">
+                      Read More <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </Link>
+                  </div>
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Welded Mesh</h3>
-                <p className="mt-2 text-base text-gray-600">
-                  Weldmesh is one of the most versatile of industrial wire products and has innumerable applications throughout all types of industry.
-                </p>
-                <div className="mt-6">
-                  <Link href="/products/welded-mesh" className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium">
-                    Read More <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
-            
-            {/* Product Card 2 */}
-            <div className="group relative bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
-              <div className="aspect-w-3 aspect-h-2">
-                <div className="h-52 bg-gray-200 group-hover:opacity-90 transition-opacity">
-                  <img src="/images/placeholder.svg" alt="Wire Mesh" className="w-full h-full object-cover" />
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Wire Mesh</h3>
-                <p className="mt-2 text-base text-gray-600">
-                  Wiremesh can offer wide-ranging characteristics depending on the configuration of wire thickness in relation to the aperture size, as well as type of weave.
-                </p>
-                <div className="mt-6">
-                  <Link href="/products/wire-mesh" className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium">
-                    Read More <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
-            
-            {/* Product Card 3 */}
-            <div className="group relative bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
-              <div className="aspect-w-3 aspect-h-2">
-                <div className="h-52 bg-gray-200 group-hover:opacity-90 transition-opacity">
-                  <img src="/images/placeholder.svg" alt="Expanded Metal" className="w-full h-full object-cover" />
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Expanded Metal</h3>
-                <p className="mt-2 text-base text-gray-600">
-                  Expanded Metal means versatility. Versatile is the key word describing Expanded Metal. New applications are found for it every day in industry, offices and home.
-                </p>
-                <div className="mt-6">
-                  <Link href="/products/expanded-metal" className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium">
-                    Read More <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
-            
-            {/* Product Card 4 */}
-            <div className="group relative bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
-              <div className="aspect-w-3 aspect-h-2">
-                <div className="h-52 bg-gray-200 group-hover:opacity-90 transition-opacity">
-                  <img src="/images/placeholder.svg" alt="Perforated Sheet" className="w-full h-full object-cover" />
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Perforated Sheet</h3>
-                <p className="mt-2 text-base text-gray-600">
-                  Perforated sheets are available in various patterns, thickness and materials. Perforated patterns consists of round, square, slotted and other custom designed patterns.
-                </p>
-                <div className="mt-6">
-                  <Link href="/products/perforated-sheet" className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium">
-                    Read More <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
           
           <div className="mt-16 text-center">

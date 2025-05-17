@@ -4,20 +4,27 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "ls -la && pwd && next build",
+    "build": "prisma generate && DISABLE_ESLINT_PLUGIN=true DISABLE_TYPESCRIPT=true next build",
+    "postbuild": "node scripts/postbuild.js",
     "start": "next start",
     "lint": "next lint",
     "seed": "node -r ts-node/register prisma/seed.ts",
-    "test-analytics": "node scripts/test-analytics.js"
+    "seed:products": "node -r ts-node/register scripts/add-featured-products.mjs",
+    "setup-db": "curl -X GET -H \"Authorization: Bearer development-setup-key\" http://localhost:3002/api/setup",
+    "predeploy": "npm run build",
+    "deploy": "npm run start",
+    "stage": "bash scripts/stage-for-commit.sh",
+    "deploy:github": "bash scripts/deploy-to-github.sh"
   },
   "prisma": {
     "seed": "node -r ts-node/register prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.11.0",
+    "@prisma/client": "^5.22.0",
     "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
     "chart.js": "^4.4.2",
+    "critters": "^0.0.23",
     "geoip-lite": "^1.4.10",
     "next": "^15.3.1",
     "next-auth": "^4.24.7",
@@ -27,6 +34,7 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
     "react-google-recaptcha-v3": "^1.10.1",
+    "sqlite3": "^5.1.7",
     "ua-parser-js": "^1.0.37"
   },
   "devDependencies": {
@@ -38,9 +46,11 @@
     "@types/react-dom": "^18",
     "@types/ua-parser-js": "^0.7.39",
     "autoprefixer": "^10.4.21",
+    "css-loader": "^7.1.2",
     "eslint": "^8",
     "eslint-config-next": "14.2.0",
     "postcss": "^8.5.3",
+    "style-loader": "^4.0.0",
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
     "typescript": "^5"

@@ -26,22 +26,22 @@ export interface SocialLinks {
 
 export interface Logo {
   url: string;
-  alt: string;
+  alt?: string;
 }
 
 export interface HeroImage {
   url: string;
-  alt: string;
+  alt?: string;
 }
 
 export interface WebsiteSettings {
   contactInfo: ContactInfo;
   aboutInfo: {
-    companyDescription: string;
-    companyImage: string; // URL of the company image
-    mission: string;
-    vision: string;
-    values: string[];
+    companyDescription?: string;
+    companyImage?: string; // URL of the company image
+    mission?: string;
+    vision?: string;
+    values?: string[];
   };
   socialLinks: SocialLinks;
   logo: Logo;
