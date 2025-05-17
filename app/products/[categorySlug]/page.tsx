@@ -8,14 +8,10 @@ import { WebPageJsonLd } from '@/components/SEO/JsonLd';
 import { generateMetadata as generateSEOMetadata } from '@/components/SEO/Metadata';
 import { getServerSettings } from '@/lib/getServerSettings';
 
-type CategoryPageProps = {
-  params: {
-    categorySlug: string;
-  };
-};
+// Using 'any' type for Next.js 15 compatibility
 
 // Generate dynamic metadata for SEO
-export async function generateMetadata({ params }: CategoryPageProps) {
+export async function generateMetadata({ params }: any) {
   const { categorySlug } = params;
   
   // Fetch category data
@@ -59,7 +55,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({ params }: any) {
   const { categorySlug } = params;
   
   // Fetch settings for the JsonLd component

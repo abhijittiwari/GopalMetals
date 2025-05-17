@@ -6,12 +6,12 @@ const prisma = new PrismaClient();
 // GET a single category by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
   try {
     const category = await prisma.category.findUnique({
       where: {
-        id: params.id,
+        id: context.params.id,
       },
       include: {
         products: true,
@@ -38,7 +38,7 @@ export async function GET(
 // PUT to update a category
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
   try {
     // In a real app, check authentication
@@ -52,7 +52,7 @@ export async function PUT(
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
       where: {
-        id: params.id,
+        id: context.params.id,
       },
     });
 
@@ -82,7 +82,7 @@ export async function PUT(
     // Update the category
     const category = await prisma.category.update({
       where: {
-        id: params.id,
+        id: context.params.id,
       },
       data: {
         name: data.name,
@@ -104,7 +104,7 @@ export async function PUT(
 // DELETE a category
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
   try {
     // In a real app, check authentication
@@ -116,7 +116,7 @@ export async function DELETE(
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
       where: {
-        id: params.id,
+        id: context.params.id,
       },
       include: {
         products: true,
@@ -134,7 +134,7 @@ export async function DELETE(
     if (existingCategory.products.length > 0) {
       await prisma.product.deleteMany({
         where: {
-          categoryId: params.id,
+          categoryId: context.params.id,
         },
       });
     }
@@ -142,7 +142,7 @@ export async function DELETE(
     // Delete the category
     await prisma.category.delete({
       where: {
-        id: params.id,
+        id: context.params.id,
       },
     });
 

@@ -16,8 +16,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Configure the CSS modules
-  cssModules: false,
   // Enable webpack 5
   webpack: (config) => {
     // Set CSS loaders to handle CSS properly

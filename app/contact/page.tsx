@@ -156,7 +156,7 @@ export default async function ContactPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Find Us</h2>
             <div className="h-96 bg-gray-300 rounded-lg overflow-hidden">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.9859347539903!2d77.55742231100661!3d12.977208087318097!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3df0d77b6f65%3A0xf8c8cd26e5e8003!2sRajajinagar%2C%20Bengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1652959074657!5m2!1sen!2sin" 
+                src={settings.contactInfo.googleMapsUrl}
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 

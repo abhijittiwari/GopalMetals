@@ -3,13 +3,9 @@ import { PrismaClient } from '../../../generated/prisma';
 
 const prisma = new PrismaClient();
 
-interface Params {
-  id: string;
-}
-
 // GET a single product by ID
-export async function GET(request: NextRequest, { params }: { params: Params }) {
-  const id = params.id;
+export async function GET(request: NextRequest, context: any) {
+  const id = context.params.id;
   
   try {
     const product = await prisma.product.findUnique({
@@ -35,8 +31,8 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
 }
 
 // PUT to update a product
-export async function PUT(request: NextRequest, { params }: { params: Params }) {
-  const id = params.id;
+export async function PUT(request: NextRequest, context: any) {
+  const id = context.params.id;
   
   try {
     const data = await request.json();
@@ -95,8 +91,8 @@ export async function PUT(request: NextRequest, { params }: { params: Params }) 
 }
 
 // DELETE a product
-export async function DELETE(request: NextRequest, { params }: { params: Params }) {
-  const id = params.id;
+export async function DELETE(request: NextRequest, context: any) {
+  const id = context.params.id;
   
   try {
     // Check if product exists

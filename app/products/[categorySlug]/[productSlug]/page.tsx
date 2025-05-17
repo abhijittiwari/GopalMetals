@@ -9,15 +9,10 @@ import ProductSEO from '@/components/SEO/ProductSEO';
 import { getServerSettings } from '@/lib/getServerSettings';
 import { WebPageJsonLd } from '@/components/SEO/JsonLd';
 
-type ProductPageProps = {
-  params: {
-    categorySlug: string;
-    productSlug: string;
-  };
-};
+// We'll use 'any' to avoid type issues with Next.js 15
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: ProductPageProps) {
+export async function generateMetadata({ params }: any) {
   const { categorySlug, productSlug } = params;
   
   // Fetch product data
@@ -85,7 +80,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params }: any) {
   const { categorySlug, productSlug } = params;
   
   // Fetch settings for JsonLd

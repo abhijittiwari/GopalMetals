@@ -3,12 +3,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import React from 'react';
 
-interface PageParams {
-  params: {
-    slug: string[];
-  };
-}
-
 // Define Product interface to match our updated schema
 interface Product {
   id: string;
@@ -33,7 +27,7 @@ interface Product {
   };
 }
 
-export default async function DynamicProductPage({ params }: PageParams) {
+export default async function DynamicProductPage({ params }: any) {
   // Properly await and destructure params
   const { slug } = params;
   const slugs = slug;

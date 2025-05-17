@@ -15,10 +15,21 @@ export default function AdminDashboard() {
       try {
         setLoading(true);
         
-        // You would replace these with actual API calls
-        // For now, we'll just set some placeholder values
-        setProductCount(24);
-        setCategoryCount(8);
+        // Fetch product count
+        const productResponse = await fetch('/api/products/count');
+        if (!productResponse.ok) {
+          throw new Error('Failed to fetch product count');
+        }
+        const productData = await productResponse.json();
+        setProductCount(productData.count || 0);
+        
+        // Fetch category count
+        const categoryResponse = await fetch('/api/categories/count');
+        if (!categoryResponse.ok) {
+          throw new Error('Failed to fetch category count');
+        }
+        const categoryData = await categoryResponse.json();
+        setCategoryCount(categoryData.count || 0);
         
         setLoading(false);
       } catch (error) {
@@ -107,50 +118,44 @@ export default function AdminDashboard() {
           <div className="mt-8 bg-white overflow-hidden shadow rounded-lg">
             <div className="px-5 py-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Website Settings</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link
-                  href="/admin/settings?tab=contact"
-                  className="flex items-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
-                >
-                  <div className="mr-4 flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary-100 text-primary-600">
-                    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Contact Information */}
+                <Link href="/admin/settings?tab=contact" className="p-5 bg-red-50 rounded-lg group hover:bg-red-100 transition-colors">
+                  <div className="flex items-center mb-2">
+                    <div className="mr-3 flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-red-100 text-red-600 group-hover:bg-red-200">
+                      <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                     <h3 className="text-base font-medium text-gray-900">Contact Information</h3>
-                    <p className="text-sm text-gray-500">Update company contact details</p>
                   </div>
+                  <p className="text-sm text-gray-500">Update company contact details</p>
                 </Link>
                 
-                <Link
-                  href="/admin/settings?tab=social"
-                  className="flex items-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
-                >
-                  <div className="mr-4 flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary-100 text-primary-600">
-                    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
+                {/* Social Media Links */}
+                <Link href="/admin/settings?tab=social" className="p-5 bg-blue-50 rounded-lg group hover:bg-blue-100 transition-colors">
+                  <div className="flex items-center mb-2">
+                    <div className="mr-3 flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-200">
+                      <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
                     <h3 className="text-base font-medium text-gray-900">Social Media</h3>
-                    <p className="text-sm text-gray-500">Configure social media links</p>
                   </div>
+                  <p className="text-sm text-gray-500">Configure social media links</p>
                 </Link>
                 
-                <Link
-                  href="/admin/settings?tab=images"
-                  className="flex items-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
-                >
-                  <div className="mr-4 flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary-100 text-primary-600">
-                    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
+                {/* Website Images */}
+                <Link href="/admin/settings?tab=images" className="p-5 bg-purple-50 rounded-lg group hover:bg-purple-100 transition-colors">
+                  <div className="flex items-center mb-2">
+                    <div className="mr-3 flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-purple-100 text-purple-600 group-hover:bg-purple-200">
+                      <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                     <h3 className="text-base font-medium text-gray-900">Website Images</h3>
-                    <p className="text-sm text-gray-500">Update logo and hero images</p>
                   </div>
+                  <p className="text-sm text-gray-500">Update logo and hero images</p>
                 </Link>
               </div>
             </div>
