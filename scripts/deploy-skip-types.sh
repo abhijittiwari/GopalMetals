@@ -52,8 +52,24 @@ if [ ! -f ".env" ] || ! grep -q "DATABASE_URL" .env; then
   echo "DATABASE_URL=\"file:./production.db\"" > .env
 fi
 
+# Force push the database schema to ensure tables exist
+echo -e "${YELLOW}Pushing database schema to ensure tables exist...${NC}"
+DATABASE_URL="file:./production.db" npx prisma db push --force-reset || \
+DATABASE_URL="file:./production.db" npx prisma@5.11.0 db push --force-reset
+
+# Check if database needs seeding
+echo -e "${YELLOW}Checking if database needs seeding...${NC}"
+DB_COUNT=$(DATABASE_URL="file:./production.db" npx prisma db execute --file=./scripts/check-count.sql 2>/dev/null || echo "0")
+if [ "$DB_COUNT" = "0" ] || [ -z "$DB_COUNT" ]; then
+  echo -e "${YELLOW}Database appears empty. Running seed script...${NC}"
+  DATABASE_URL="file:./production.db" npx prisma db seed
+else
+  echo -e "${GREEN}Database already has data. Skipping seed.${NC}"
+fi
+
 # Generate Prisma client to avoid runtime issues
 echo -e "${YELLOW}Generating Prisma client...${NC}"
+npx prisma generate --schema=./prisma/schema.prisma || \
 npx prisma@5.11.0 generate --schema=./prisma/schema.prisma || true
 
 # Build without type checking

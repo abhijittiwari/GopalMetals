@@ -128,7 +128,7 @@ check_status "Failed to install npm dependencies" "npm dependencies installed su
 
 # Step A: Setup Prisma and database
 echo -e "\n${YELLOW}Step 6: Setting up database...${NC}"
-# Create environment file
+# Create environment files
 cat > .env.local << EOL
 DATABASE_URL="file:./production.db"
 NODE_ENV="production"
@@ -137,42 +137,36 @@ NEXTAUTH_URL="https://${DOMAIN_NAME}"
 EOL
 check_status "Failed to create environment file" "Environment file created successfully"
 
-# Make sure DATABASE_URL is also available in .env for Prisma
-echo "DATABASE_URL=\"file:./production.db\"" > .env
-check_status "Failed to create .env file" ".env file created successfully"
-
-# Verify schema file exists
-if [ ! -f "./prisma/schema.prisma" ]; then
-  echo -e "${RED}Error: prisma/schema.prisma file not found!${NC}"
-  exit 1
+# Ensure DATABASE_URL is set in .env for Prisma
+if [ ! -f ".env" ] || ! grep -q "DATABASE_URL" .env; then
+  echo -e "${YELLOW}Creating .env file with DATABASE_URL...${NC}"
+  echo "DATABASE_URL=\"file:./production.db\"" > .env
+  check_status "Failed to create .env file" ".env file created successfully"
 fi
 
-# Install specific Prisma version globally to avoid path issues
-echo -e "${YELLOW}Installing Prisma CLI globally...${NC}"
-npm install -g prisma@5.11.0
-check_status "Failed to install Prisma CLI" "Prisma CLI installed successfully"
+# Create database and run migrations
+echo -e "${YELLOW}Setting up database...${NC}"
+# Force push the schema to ensure all tables exist
+DATABASE_URL="file:./production.db" npx prisma db push --force-reset || \
+DATABASE_URL="file:./production.db" npx prisma@5.11.0 db push --force-reset
+check_status "Failed to push database schema" "Database schema pushed successfully"
 
-# Generate Prisma client using npx with explicit path to schema
-echo -e "${YELLOW}Running Prisma generate with absolute path...${NC}"
-SCHEMA_PATH="$APP_DIR/prisma/schema.prisma"
-echo -e "${YELLOW}Schema path: $SCHEMA_PATH${NC}"
-
-# Try different approaches to generate the client
-echo -e "${YELLOW}Approach 1: Using global prisma with full path${NC}"
-DATABASE_URL="file:./production.db" prisma generate --schema="$SCHEMA_PATH" || \
-echo -e "${YELLOW}Approach 2: Using npx with full path${NC}" && \
-DATABASE_URL="file:./production.db" npx prisma@5.11.0 generate --schema="$SCHEMA_PATH" || \
-echo -e "${YELLOW}Approach 3: Falling back to basic generate${NC}" && \
-DATABASE_URL="file:./production.db" npx prisma generate
-
+# Generate the Prisma client
+echo -e "${YELLOW}Generating Prisma client...${NC}"
+DATABASE_URL="file:./production.db" npx prisma generate || \
+DATABASE_URL="file:./production.db" npx prisma@5.11.0 generate
 check_status "Failed to generate Prisma client" "Prisma client generated successfully"
 
-# Create database and run migrations if needed
-if [ ! -d prisma/migrations ]; then
-    echo "Setting up initial database..."
-    DATABASE_URL="file:./production.db" prisma migrate dev --name init --schema="$SCHEMA_PATH" || \
-    DATABASE_URL="file:./production.db" npx prisma migrate dev --name init
-    check_status "Failed to initialize database" "Database initialized successfully"
+# Run database seeding if needed 
+echo -e "${YELLOW}Checking if database needs seeding...${NC}"
+# Check if database is empty by counting categories
+DB_COUNT=$(DATABASE_URL="file:./production.db" npx prisma db execute --file=./scripts/check-count.sql || echo "0")
+if [ "$DB_COUNT" = "0" ] || [ -z "$DB_COUNT" ]; then
+  echo -e "${YELLOW}Database appears empty. Running seed script...${NC}"
+  DATABASE_URL="file:./production.db" npx prisma db seed
+  check_status "Failed to seed database" "Database seeded successfully"
+else
+  echo -e "${GREEN}Database already has data. Skipping seed.${NC}"
 fi
 
 # Step 7: Build the application
