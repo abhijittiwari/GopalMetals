@@ -1,1 +1,15 @@
-/* Empty file */
+/* Global styles */
+
+/* CSS Custom Properties (Variables) */
+:root {
+  --primary-color: #d0021b;
+  --secondary-color: #a00115;
+  --text-color: #111827;
+  --background-color: #f9fafb;
+}
+
+/* Base styles */
+body {
+  color: var(--text-color);
+  background-color: var(--background-color);
+}

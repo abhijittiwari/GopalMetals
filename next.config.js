@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
-  reactStrictMode: true,
+  reactStrictMode: false,
   images: {
     domains: ['localhost'],
     remotePatterns: [
@@ -11,33 +10,23 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    serverActions: {
-      allowedOrigins: ['localhost:3000', 'gopalmetals.com'],
-    },
-    // Only keep supported features
-    optimizeCss: false, // Disable this to avoid critters dependency
-  },
-  serverExternalPackages: ['prisma', '@prisma/client'],
-  webpack: (config) => {
-    // Add plugin to help with missing dependencies
-    config.infrastructureLogging = {
-      level: 'error', // Reduce warning noise
-    };
-    return config;
-  },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
+  },
+  // Configure the CSS modules
+  cssModules: false,
+  // Enable webpack 5
+  webpack: (config) => {
+    // Set CSS loaders to handle CSS properly
+    config.module.rules.push({
+      test: /\.css$/,
+      use: ['style-loader', 'css-loader'],
+    });
+    return config;
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

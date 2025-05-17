@@ -1,5 +1,5 @@
-import "./styles.css";
-import "./globals.css"; // Empty file but keeping in case there are references
+// Import global styles only
+import "./globals.css";
 import Link from "next/link";
 import { Inter } from "next/font/google";
 import Image from "next/image";
